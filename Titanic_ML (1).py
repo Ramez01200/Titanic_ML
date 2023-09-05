@@ -440,6 +440,12 @@ display(submission)
 submission.to_excel("submission.xlsx", index=False)
 
 
+# In[1]:
+
+
+y_pred.info()
+
+
 # In[ ]:
 
 
