@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[69]:
+# ### Titanic: Machine Learning
+
+# In[3]:
 
 
 # data analysis and wrangling
 import pandas as pd
 import numpy as np
-import random as rnd
 
 # visualization
 import seaborn as sns
@@ -16,16 +17,21 @@ get_ipython().run_line_magic('matplotlib', 'inline')
 
 # machine learning
 from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC, LinearSVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.linear_model import Perceptron
-from sklearn.linear_model import SGDClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC, LinearSVC
 
 
-# In[3]:
+# ### Data Dictionary
+# * Survived: 0 = No, 1 = Yes
+# * pclass: Ticket class 1 = 1st, 2 = 2nd, 3 = 3rd
+# * sibsp: # of siblings / spouses aboard the Titanic
+# * parch: # of parents / children aboard the Titanic
+# * ticket: Ticket number
+# * cabin: Cabin number
+# * embarked: Port of Embarkation C = Cherbourg, Q = Queenstown, S = Southampton
+
+# In[4]:
 
 
 train = pd.read_csv("C:/Users/Ramez/Downloads/New folder/train.csv")
@@ -33,13 +39,13 @@ test = pd.read_csv("C:/Users/Ramez/Downloads/New folder/test.csv")
 train_test_data = [train, test]
 
 
-# In[4]:
+# In[5]:
 
 
 train.head()
 
 
-# In[5]:
+# In[6]:
 
 
 test.head()
@@ -69,19 +75,19 @@ train.info()
 test.info()
 
 
-# In[12]:
+# In[11]:
 
 
 train.isnull().sum()
 
 
-# In[13]:
+# In[12]:
 
 
 test.isnull().sum()
 
 
-# In[14]:
+# In[13]:
 
 
 def barchart(feature):
@@ -92,43 +98,63 @@ def barchart(feature):
     df.plot(kind='bar',stacked=True, figsize=(10,5))
 
 
-# In[15]:
+# In[14]:
 
 
 barchart('Sex')
 
 
-# In[17]:
+# The Chart confirms Women more likely survivied than Men
+
+# In[15]:
 
 
 barchart('Pclass')
 
 
-# In[18]:
+# The Chart confirms 1st class more likely survivied than other classes
+# 
+# The Chart confirms 3rd class more likely dead than other classes
+
+# In[16]:
 
 
 barchart('SibSp')
 
 
-# In[19]:
+# The Chart confirms a person aboarded with more than 2 siblings or spouse more likely survived
+# 
+# The Chart confirms a person aboarded without siblings or spouse more likely dead
+
+# In[17]:
 
 
 barchart('Parch')
 
 
-# In[20]:
+# The Chart confirms a person aboarded with more than 2 parents or children more likely survived
+# 
+# The Chart confirms a person aboarded alone more likely dead
+
+# In[18]:
 
 
 barchart('Embarked')
 
 
-# In[21]:
+# The Chart confirms a person aboarded from C slightly more likely survived
+# 
+# The Chart confirms a person aboarded from Q more likely dead
+# 
+# The Chart confirms a person aboarded from S more likely dead
+
+# In[19]:
 
 
 train.head()
 
 
-# In[22]:
+# In[20]:
 
 
 for dataset in train_test_data:
@@ -136,19 +162,28 @@ for dataset in train_test_data:
     
 
 
-# In[23]:
+# In[21]:
 
 
 train['Title'].value_counts()
 
 
-# In[24]:
+# In[22]:
 
 
 test['Title'].value_counts()
 
 
-# In[25]:
+# ## Title map
+# Mr : 0 
+# 
+# Miss : 1
+# 
+# Mrs: 2
+# 
+# Others: 3
+
+# In[24]:
 
 
 title_mapping = {"Mr": 0, "Miss": 1, "Mrs": 2, 
@@ -158,83 +193,106 @@ for dataset in train_test_data:
     dataset['Title'] = dataset['Title'].map(title_mapping)
 
 
-# In[26]:
+# In[25]:
 
 
 train.head()
 
 
-# In[27]:
+# In[26]:
 
 
 test.head()
 
 
-# In[28]:
+# In[27]:
 
 
 barchart('Title')
 
 
-# In[31]:
+# In[28]:
 
 
 train.drop('Name',axis=1,inplace=True)
 test.drop('Name',axis=1,inplace=True)
 
 
-# In[32]:
+# In[29]:
 
 
 train.head()
 
 
-# In[34]:
+# In[30]:
 
 
 for dataset in train_test_data:
     dataset['Sex'] = dataset['Sex'].map({'male':0,'female':1})
 
 
-# In[35]:
+# In[31]:
 
 
 train.head()
 
 
-# In[36]:
+# In[32]:
 
 
 barchart('Sex')
 
 
-# In[37]:
+# ## Age
+# 
+# some age is missing
+# 
+# Let's use Title's median age for missing Age
+
+# In[34]:
 
 
 train['Age'].fillna(train.groupby('Title')['Age'].transform('median'),inplace=True)
 test['Age'].fillna(test.groupby('Title')['Age'].transform('median'),inplace=True)
 
 
-# In[39]:
+# In[35]:
 
 
-train.head(30)
-train.groupby("Title")["Age"].transform("median")
+train['Age'].info()
 
 
-# In[40]:
+# In[36]:
+
+
+train['Age'].value_counts()
+
+
+# In[37]:
 
 
 train.info()
 
 
-# In[41]:
+# In[38]:
 
 
 test.info()
 
 
-# In[44]:
+# feature vector map:
+# 
+# child: 0
+# 
+# young: 1
+# 
+# adult: 2
+# 
+# mid-age: 3
+# 
+# senior: 4
+
+# In[40]:
 
 
 for dataset in train_test_data:
@@ -242,68 +300,68 @@ for dataset in train_test_data:
     dataset.loc[(dataset['Age'] > 16) & (dataset['Age'] <= 32), 'Age'] = 1
     dataset.loc[(dataset['Age'] > 32) & (dataset['Age'] <= 48), 'Age'] = 2
     dataset.loc[(dataset['Age'] > 48) & (dataset['Age'] <= 64), 'Age'] = 3
-    dataset.loc[ dataset['Age'] > 64, 'Age']
+    dataset.loc[ dataset['Age'] > 64, 'Age'] = 4
 train.head()
 
 
-# In[45]:
+# In[41]:
+
+
+train['Age'].value_counts()
+
+
+# In[42]:
 
 
 barchart('Age')
 
 
-# In[46]:
+# In[43]:
 
 
 train['Embarked'].value_counts()
 
 
-# In[47]:
+# In[44]:
 
 
 for dataset in train_test_data:
-    dataset['Embarked']= dataset['Embarked'].fillna('S')
+    dataset['Embarked'] = dataset['Embarked'].fillna('S')
 
 
-# In[48]:
+# In[45]:
 
 
 train.info()
 
 
-# In[49]:
+# In[46]:
 
 
 for dataset in train_test_data:
     dataset['Embarked'] = dataset['Embarked'].map({'S':0,'C':1,'Q':2})
 
 
-# In[51]:
+# In[48]:
 
 
-train.head()
+train['Embarked'].value_counts()
 
 
-# In[52]:
+# In[49]:
 
 
 train['Fare'].fillna(train.groupby('Pclass')['Fare'].transform('median'),inplace=True)
 test['Fare'].fillna(test.groupby('Pclass')['Fare'].transform('median'),inplace=True)
 
 
-# In[53]:
-
-
-train.head()
-
-
-# In[54]:
+# In[50]:
 
 
 train.info()
 
 
-# In[56]:
+# In[51]:
 
 
 for dataset in train_test_data:
@@ -311,6 +369,39 @@ for dataset in train_test_data:
     dataset.loc[(dataset['Fare'] > 17) & (dataset['Fare'] <= 30), 'Fare'] = 1
     dataset.loc[(dataset['Fare'] > 30) & (dataset['Fare'] <= 100), 'Fare'] = 2
     dataset.loc[ dataset['Fare'] > 100, 'Fare'] = 3
+
+
+# In[52]:
+
+
+train['Fare'].value_counts()
+
+
+# In[53]:
+
+
+train["FamilySize"] = train["SibSp"] + train["Parch"] + 1
+test["FamilySize"] = test["SibSp"] + test["Parch"] + 1
+
+
+# In[54]:
+
+
+train.head()
+
+
+# In[55]:
+
+
+features_drop = ['Ticket', 'SibSp', 'Parch','Cabin']
+train = train.drop(features_drop, axis=1)
+test = test.drop(features_drop, axis=1)
+
+
+# In[56]:
+
+
+train = train.drop(['PassengerId'], axis=1)
 
 
 # In[57]:
@@ -322,81 +413,51 @@ train.head()
 # In[58]:
 
 
-train["FamilySize"] = train["SibSp"] + train["Parch"] + 1
-test["FamilySize"] = test["SibSp"] + test["Parch"] + 1
+X_train = train.drop("Survived", axis=1)
+Y_train = train["Survived"]
+X_test  = test.drop("PassengerId", axis=1).copy()
+X_train.shape, Y_train.shape, X_test.shape
 
 
-# In[59]:
+# In[60]:
 
 
-train.head()
-
-
-# In[75]:
-
-
-features_drop = ['Ticket', 'SibSp', 'Parch','Cabin']
-train = train.drop(features_drop, axis=1)
-test = test.drop(features_drop, axis=1)
-
-
-# In[76]:
-
-
-train = train.drop(['PassengerId'], axis=1)
-
-
-# In[77]:
-
-
-train.head()
-
-
-# In[78]:
-
-
-X_train0 = train.drop("Survived", axis=1)
-Y_train0 = train["Survived"]
-X_test0  = test.drop("PassengerId", axis=1).copy()
-X_train0.shape, Y_train0.shape, X_test0.shape
-
-
-# In[81]:
+# Logistic Regression
 
 
 logreg = LogisticRegression()
-logreg.fit(X_train0, Y_train0)
-Y_pred = logreg.predict(X_test0)
-acc_log = round(logreg.score(X_train0, Y_train0) * 100, 2)
+logreg.fit(X_train, Y_train)
+Y_pred = logreg.predict(X_test)
+acc_log = round(logreg.score(X_train, Y_train) * 100, 2)
 acc_log
 
 
-# In[82]:
+# In[61]:
 
 
 # Decision Tree
 
 decision_tree = DecisionTreeClassifier()
-decision_tree.fit(X_train0, Y_train0)
-Y_pred = decision_tree.predict(X_test0)
-acc_decision_tree = round(decision_tree.score(X_train0, Y_train0) * 100, 2)
+decision_tree.fit(X_train, Y_train)
+Y_pred = decision_tree.predict(X_test)
+acc_decision_tree = round(decision_tree.score(X_train, Y_train) * 100, 2)
 acc_decision_tree
 
 
-# In[83]:
+# In[63]:
 
 
 # Random Forest
 
 random_forest = RandomForestClassifier(n_estimators=100)
-random_forest.fit(X_train0, Y_train0)
-Y_pred = random_forest.predict(X_test0)
-random_forest.score(X_train0, Y_train0)
-acc_random_forest = round(random_forest.score(X_train0, Y_train0) * 100, 2)
+random_forest.fit(X_train, Y_train)
+Y_pred = random_forest.predict(X_test)
+random_forest.score(X_train, Y_train)
+acc_random_forest = round(random_forest.score(X_train, Y_train) * 100, 2)
 acc_random_forest
 
 
-# In[84]:
+# In[64]:
 
 
 models = pd.DataFrame({
@@ -407,7 +468,7 @@ models = pd.DataFrame({
 models.sort_values(by='Score', ascending=False)
 
 
-# In[93]:
+# In[65]:
 
 
 submission = pd.DataFrame({
@@ -416,34 +477,22 @@ submission = pd.DataFrame({
     })
 
 
-# In[94]:
+# In[66]:
 
 
 submission.head()
 
 
-# In[95]:
+# In[67]:
 
 
 submission.shape
 
 
-# In[96]:
-
-
-display(submission)
-
-
-# In[97]:
+# In[68]:
 
 
 submission.to_excel("submission.xlsx", index=False)
-
-
-# In[1]:
-
-
-y_pred.info()
 
 
 # In[ ]:
